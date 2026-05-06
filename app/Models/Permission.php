@@ -1,0 +1,24 @@
+<?php
+
+// app/Models/Permission.php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Permission extends Model
+{
+    protected $fillable = ['name', 'label', 'module'];
+
+    public function profiles()
+    {
+
+     return $this->belongsToMany(
+        Profile::class,
+        'profile_permission',
+        'permission_id',
+        'profile_id'
+    );
+       
+    }
+}

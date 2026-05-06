@@ -20,7 +20,8 @@ class User extends Authenticatable implements JWTSubject
         'setor',
         'perfil',
         'endereco',
-        'status'
+        'status',
+        'profile_id'
     ];
 
     protected $hidden = [
@@ -41,5 +42,19 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    public function profile()
+    {
+        return $this->belongsTo(Profile::class);
+    }
+
+    public function hasPermission($permission)
+    {
+        if (!$this->profile) return false;
+
+        return $this->profile->permissions()
+            ->where('name', $permission)
+            ->exists();
     }
 }

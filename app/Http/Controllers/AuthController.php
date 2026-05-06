@@ -78,6 +78,7 @@ class AuthController extends Controller
         'usuario' => $request->usuario,
         'email' => $request->email,
         'password' => Hash::make($request->password),
+        'profile_id' => $request->profile_id
     ]);
 
     // 🔐 opcional: já logar e gerar token
@@ -142,37 +143,21 @@ public function update(Request $request, $id)
     }
 }
 
-    public function me()
-    {
-        return response()->json(auth()->user());
-    }
-
-    public function deactivate($id)
+   public function me()
 {
-    try {
-        $user = User::find($id);
+    $user = User::with('profile.permissions')->find(auth()->id());
 
-        if (!$user) {
-            return response()->json([
-                'message' => 'Usuário não encontrado'
-            ], 404);
-        }
-
-        // 🔴 inativa o usuário
-        $user->status = 'Inativo';
-        $user->save();
-
-        return response()->json([
-            'message' => 'Usuário desativado com sucesso',
-            'user' => $user
-        ], 200);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => 'Erro ao desativar usuário',
-            'error' => $e->getMessage()
-        ], 500);
-    }
+    return response()->json([
+        'id' => $user->id,
+        'name' => $user->name,
+        'email' => $user->email,
+        'status' => $user->status,
+        'profile' => [
+            'id' => $user->profile?->id,
+            'name' => $user->profile?->name,
+            'permissions' => $user->profile?->permissions?->pluck('name') ?? []
+        ]
+    ]);
 }
 
     public function logout()
