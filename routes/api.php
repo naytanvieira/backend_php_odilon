@@ -16,6 +16,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::put('/user/update/{id}', [AuthController::class, 'update']);
     Route::put('/user/deactivate/{id}', [AuthController::class, 'deactivate']);
+    Route::put('/user/update-me', [AuthController::class, 'updateMe']);
 
     Route::get('/dashboard/metrics', [DashboardController::class, 'metrics']);
 

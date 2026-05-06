@@ -174,4 +174,23 @@ public function update(Request $request, $id)
             'expires_in' => auth()->factory()->getTTL() * 60
         ]);
     }
+
+
+    public function updateMe(Request $request)
+    {
+        $user = auth()->user();
+
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => $request->password 
+                ? bcrypt($request->password) 
+                : $user->password,
+        ]);
+
+        return response()->json([
+            'message' => 'Usuário atualizado com sucesso',
+            'user' => $user
+        ]);
+    }
 }
