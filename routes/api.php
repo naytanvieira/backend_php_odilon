@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
  use App\Http\Controllers\DashboardController;
  use App\Http\Controllers\ProfileController;
  use App\Http\Controllers\PermissionController;
+ use App\Http\Controllers\SpreadsheetTypeController;
 
 Route::post('user/login', [AuthController::class, 'login']);
 Route::post('user/register', [AuthController::class, 'register']);
@@ -44,5 +45,20 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/{id}', [PermissionController::class, 'show']);
         Route::put('/{id}', [PermissionController::class, 'update']);
         Route::delete('/{id}', [PermissionController::class, 'destroy']);
+    });
+
+    
+
+    Route::prefix('spreadsheet-types')->group(function () {
+
+        Route::get('/', [SpreadsheetTypeController::class, 'index']);
+
+        Route::get('/show/{id}', [SpreadsheetTypeController::class, 'show']);
+
+        Route::post('/store', [SpreadsheetTypeController::class, 'store']);
+
+        Route::put('/update/{id}', [SpreadsheetTypeController::class, 'update']);
+
+        Route::delete('/delete/{id}', [SpreadsheetTypeController::class, 'destroy']);
     });
 });
