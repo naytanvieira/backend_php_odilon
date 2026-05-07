@@ -17,11 +17,11 @@ class User extends Authenticatable implements JWTSubject
         'email',
         'password',
         'telefone',
-        'setor',
         'perfil',
         'endereco',
         'status',
-        'profile_id'
+        'profile_id',
+        'setor_id'
     ];
 
     protected $hidden = [
@@ -56,5 +56,10 @@ class User extends Authenticatable implements JWTSubject
         return $this->profile->permissions()
             ->where('name', $permission)
             ->exists();
+    }
+
+    public function sector()
+    {
+        return $this->belongsTo(Sector::class, 'setor_id');
     }
 }

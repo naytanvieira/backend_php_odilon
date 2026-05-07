@@ -9,32 +9,63 @@ use App\Models\User;
 
 class AuthController extends Controller
 {
+public function queryAll()
+{
+    try {
 
-    public function queryAll()
-    {
-        try {
-            $users = User::select(
+        $users = User::with([
+                'sector',
+                'profile'
+            ])
+            ->select(
                 'id',
                 'name',
                 'usuario',
                 'email',
                 'telefone',
-                'setor',
-                'perfil',
+                'setor_id',
+                'profile_id',
                 'status'
-            )->get();
+            )
+            ->get()
+            ->map(function ($user) {
 
-            return response()->json([
-                'data' => $users
-            ], 200);
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'usuario' => $user->usuario,
+                    'email' => $user->email,
+                    'telefone' => $user->telefone,
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Erro ao buscar usuários',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+                    /* =========================
+                       SETOR
+                    ========================= */
+                    'setor_id' => $user->setor_id,
+                    'setor_nome' => $user->sector?->name,
+                    'setor_sigla' => $user->sector?->code,
+
+                    /* =========================
+                       PERFIL
+                    ========================= */
+                    'profile_id' => $user->profile_id,
+                    'profile_nome' => $user->profile?->name,
+
+                    'status' => $user->status,
+                ];
+            });
+
+        return response()->json([
+            'data' => $users
+        ], 200);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'message' => 'Erro ao buscar usuários',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     public function show($id)
     {
@@ -78,7 +109,9 @@ class AuthController extends Controller
         'usuario' => $request->usuario,
         'email' => $request->email,
         'password' => Hash::make($request->password),
-        'profile_id' => $request->profile_id
+        'profile_id' => $request->profile_id,
+        'setor_id' => $request->setor_id,
+        'telefone' => $request->telefone,
     ]);
 
     // 🔐 opcional: já logar e gerar token
@@ -110,7 +143,6 @@ public function update(Request $request, $id)
             'usuario' => 'required|string|max:100|unique:users,usuario,' . $id,
             'email' => 'nullable|email|unique:users,email,' . $id,
             'telefone' => 'nullable|string',
-            'setor' => 'nullable|string',
             'perfil' => 'nullable|string',
             'password' => 'nullable|string|min:6',
         ]);
@@ -120,8 +152,9 @@ public function update(Request $request, $id)
         $user->usuario = $request->usuario;
         $user->email = $request->email;
         $user->telefone = $request->telefone;
-        $user->setor = $request->setor;
         $user->perfil = $request->perfil;
+        $user->setor_id = $request->setor_id;
+        $user->profile_id = $request->profile_id;
 
         // 🔐 atualiza senha somente se enviada
         if ($request->filled('password')) {

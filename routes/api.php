@@ -6,6 +6,8 @@ use App\Http\Controllers\AuthController;
  use App\Http\Controllers\ProfileController;
  use App\Http\Controllers\PermissionController;
  use App\Http\Controllers\SpreadsheetTypeController;
+ use App\Http\Controllers\SectorController;
+
 
 Route::post('user/login', [AuthController::class, 'login']);
 Route::post('user/register', [AuthController::class, 'register']);
@@ -60,5 +62,19 @@ Route::middleware('auth:api')->group(function () {
         Route::put('/update/{id}', [SpreadsheetTypeController::class, 'update']);
 
         Route::delete('/delete/{id}', [SpreadsheetTypeController::class, 'destroy']);
+    });
+
+
+    Route::prefix('sectors')->group(function () {
+
+        Route::get('/', [SectorController::class, 'index']);
+
+        Route::get('/show/{id}', [SectorController::class, 'show']);
+
+        Route::post('/store', [SectorController::class, 'store']);
+
+        Route::put('/update/{id}', [SectorController::class, 'update']);
+
+        Route::delete('/delete/{id}', [SectorController::class, 'destroy']);
     });
 });
