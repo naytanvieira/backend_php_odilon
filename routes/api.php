@@ -7,6 +7,8 @@ use App\Http\Controllers\AuthController;
  use App\Http\Controllers\PermissionController;
  use App\Http\Controllers\SpreadsheetTypeController;
  use App\Http\Controllers\SectorController;
+ use App\Http\Controllers\PatientController;
+  use App\Http\Controllers\InternationController;
 
 
 Route::post('user/login', [AuthController::class, 'login']);
@@ -77,6 +79,19 @@ Route::middleware('auth:api')->group(function () {
 
         Route::delete('/delete/{id}', [SectorController::class, 'destroy']);
     });
+
+    Route::post('/patients/import',[PatientController::class, 'import']);
+    Route::get('/patients',[PatientController::class, 'queryAll']);
+
+   
+
+Route::prefix('internations')->group(function () {
+    Route::get('/', [InternationController::class, 'index']);
+    Route::post('/', [InternationController::class, 'store']);
+    Route::get('/{id}', [InternationController::class, 'show']);
+    Route::put('/{id}', [InternationController::class, 'update']);
+    Route::delete('/{id}', [InternationController::class, 'destroy']);
+});
 });
 
 Route::get(
