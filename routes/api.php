@@ -78,3 +78,8 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('/delete/{id}', [SectorController::class, 'destroy']);
     });
 });
+
+Route::get(
+    '/dashboard/tempo-economizado',
+    [PlanilhaProcessamentoLogController::class, 'tempoEconomizado']
+);

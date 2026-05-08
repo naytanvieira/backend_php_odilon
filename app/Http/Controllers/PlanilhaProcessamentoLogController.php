@@ -46,4 +46,63 @@ class PlanilhaProcessamentoLogController extends Controller
     {
         return PlanilhaProcessamentoLog::latest()->paginate(20);
     }
+
+
+    public function tempoEconomizado()
+{
+    try {
+
+        $logs = PlanilhaProcessamentoLog::with('spreadsheetType')
+            ->get();
+
+        $totalHoras = 0;
+
+        foreach ($logs as $log) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | manual_time
+            |--------------------------------------------------------------------------
+            | Ex:
+            | "2"
+            | "1.5"
+            | "3"
+            */
+
+            $horas = (float) (
+                $log->spreadsheetType?->manual_time ?? 0
+            );
+
+            $totalHoras += $horas;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | FORMATAR
+        |--------------------------------------------------------------------------
+        */
+        $horasInteiras = floor($totalHoras);
+
+        $minutos =
+            round(($totalHoras - $horasInteiras) * 60);
+
+        return response()->json([
+
+            'total_horas' => $totalHoras,
+
+            'tempo_formatado' =>
+                "{$horasInteiras}h {$minutos}m",
+
+            'logs_processados' => $logs->count(),
+        ]);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'message' => 'Erro ao calcular tempo economizado',
+            'error' => $e->getMessage()
+        ], 500);
+    }
 }
+    }
+

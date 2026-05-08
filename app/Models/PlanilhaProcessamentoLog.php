@@ -37,4 +37,13 @@ class PlanilhaProcessamentoLog extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function spreadsheetType()
+{
+    return $this->belongsTo(
+        SpreadsheetType::class,
+        'tipo',                 // coluna da tabela logs
+        'nome_funcao_python'   // coluna da spreadsheet_types
+    );
+}
 }
