@@ -10,7 +10,7 @@ class Internacoes extends Model
     protected $table = 'internacoes';
 
     protected $fillable = [
-        'paciente_id',
+        'cod_paciente',
         'codigo_atendimento',
         'tipo_internacao',
         'leito',
@@ -28,7 +28,12 @@ class Internacoes extends Model
     */
     public function paciente()
     {
-        return $this->belongsTo(Paciente::class);
+        return $this->belongsTo(
+        Paciente::class,
+        'cod_paciente',                 // coluna da tabela logs
+        'cod_paciente'   // coluna da spreadsheet_types
+    );
+        //return $this->belongsTo(Paciente::class);
     }
 
     /*

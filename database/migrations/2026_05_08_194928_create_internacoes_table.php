@@ -13,8 +13,7 @@ return new class extends Migration
             $table->id();
 
             // 🔗 CHAVE ESTRANGEIRA (pacientes)
-            $table->string('cod_paciente')
-                ->unique();
+            $table->string('cod_paciente');
             $table->string('codigo_atendimento')
                 ->unique();
             

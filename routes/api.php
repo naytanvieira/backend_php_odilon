@@ -24,6 +24,7 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/user/update-me', [AuthController::class, 'updateMe']);
 
     Route::get('/dashboard/metrics', [DashboardController::class, 'metrics']);
+     Route::get('/dashboard/resumo', [DashboardController::class, 'resumo']);
 
    
 
@@ -86,11 +87,13 @@ Route::middleware('auth:api')->group(function () {
    
 
 Route::prefix('internations')->group(function () {
+    Route::get('/exportar', [InternationController::class, 'exportar']);
     Route::get('/', [InternationController::class, 'index']);
     Route::post('/', [InternationController::class, 'store']);
     Route::get('/{id}', [InternationController::class, 'show']);
     Route::put('/{id}', [InternationController::class, 'update']);
     Route::delete('/{id}', [InternationController::class, 'destroy']);
+    
 });
 });
 
