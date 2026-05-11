@@ -239,12 +239,42 @@ public function stats(Request $request)
         ->whereNotNull('data_alta')
         ->count();
 
+    $faixaEtaria = [
+        [
+            'name'  => 'Crianças',
+            'total' => (clone $query)
+                ->whereRaw('TIMESTAMPDIFF(YEAR, data_nasc, CURDATE()) BETWEEN 0 AND 12')
+                ->count()
+        ],
+
+        [
+            'name'  => 'Adolescentes',
+            'total' => (clone $query)
+                ->whereRaw('TIMESTAMPDIFF(YEAR, data_nasc, CURDATE()) BETWEEN 13 AND 17')
+                ->count()
+        ],
+
+        [
+            'name'  => 'Adultos',
+            'total' => (clone $query)
+                ->whereRaw('TIMESTAMPDIFF(YEAR, data_nasc, CURDATE()) BETWEEN 18 AND 59')
+                ->count()
+        ],
+
+        [
+            'name'  => 'Idosos',
+            'total' => (clone $query)
+                ->whereRaw('TIMESTAMPDIFF(YEAR, data_nasc, CURDATE()) >= 60')
+                ->count()
+        ],
+    ];
+
     /* =========================
        RESPONSE
     ========================= */
     return response()->json([
         'setores'             => $setores,
-        'convenios'           => $convenios,
+        'faixa_etaria'        => $faixaEtaria,
         'tipos'               => $tipos,
         'internacoes_ativas'  => $internacoesAtivas,
         'altas'               => $altas,
