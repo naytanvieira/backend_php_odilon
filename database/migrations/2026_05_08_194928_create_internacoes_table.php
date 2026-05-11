@@ -20,6 +20,7 @@ return new class extends Migration
             
 
             $table->string('tipo_internacao')->nullable();
+            $table->date('data_nasc')->nullable();
             $table->string('leito')->nullable();
 
             $table->date('dt_interna')->nullable();

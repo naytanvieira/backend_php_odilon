@@ -88,11 +88,14 @@ Route::middleware('auth:api')->group(function () {
 
 Route::prefix('internations')->group(function () {
     Route::get('/exportar', [InternationController::class, 'exportar']);
+    Route::get('/setores', [InternationController::class, 'setores']);
+    Route::get('/stats', [InternationController::class, 'stats']);
     Route::get('/', [InternationController::class, 'index']);
     Route::post('/', [InternationController::class, 'store']);
     Route::get('/{id}', [InternationController::class, 'show']);
     Route::put('/{id}', [InternationController::class, 'update']);
     Route::delete('/{id}', [InternationController::class, 'destroy']);
+
     
 });
 });

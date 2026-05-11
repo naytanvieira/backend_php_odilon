@@ -20,6 +20,7 @@ class InternationController extends Controller
     $ativas = $ativas === "false" ? false : true;
     $mes    = $request->query('mes', '');
     $ano    = $request->query('ano', '');
+    $setor = $request->query('setor', '');
 
    
     $internacoes = Internacoes::with('paciente')
@@ -43,6 +44,9 @@ class InternationController extends Controller
         ->when($ano, function ($query) use ($ano) {
             $query->whereYear('dt_interna', $ano);
         })
+        ->when($setor, function ($query) use ($setor) {
+            $query->where('setor', $setor);
+        })
         ->paginate(10);
 
     return response()->json([
@@ -60,6 +64,7 @@ public function exportar(Request $request): StreamedResponse
     $ativas = $request->query('ativas', 0);
     $mes    = $request->query('mes', '');
     $ano    = $request->query('ano', '');
+    $setor = $request->query('setor', '');
 
     $internacoes = Internacoes::with('paciente')
         ->when($search, function ($query) use ($search) {
@@ -83,6 +88,9 @@ public function exportar(Request $request): StreamedResponse
         })
         ->when($ano, function ($query) use ($ano) {
             $query->whereYear('dt_interna', $ano);
+        })
+        ->when($setor, function ($query) use ($setor) {
+            $query->where('setor', $setor);
         })
         ->get(); // ← sem paginate, pega tudo
 
@@ -133,6 +141,114 @@ public function exportar(Request $request): StreamedResponse
     };
 
     return response()->stream($callback, 200, $headers);
+}
+
+public function setores()
+{
+    $setores = Internacoes::select('setor')
+        ->whereNotNull('setor')
+        ->distinct()
+        ->orderBy('setor')
+        ->pluck('setor');
+
+    return response()->json($setores);
+}
+
+public function stats(Request $request)
+{
+    $search = $request->search;
+    $ativas = filter_var($request->ativas, FILTER_VALIDATE_BOOLEAN);
+    $mes    = $request->mes;
+    $ano    = $request->ano;
+    $setor  = $request->setor;
+
+    /* =========================
+       QUERY BASE
+    ========================= */
+    $query = Internacoes::query();
+
+    // SEARCH
+    if (!empty($search)) {
+
+        $query->where(function ($q) use ($search) {
+
+            $q->where('codigo_atendimento', 'like', "%{$search}%")
+              ->orWhere('cod_paciente', 'like', "%{$search}%")
+              ->orWhere('convenio', 'like', "%{$search}%")
+              ->orWhere('medico', 'like', "%{$search}%")
+              ->orWhere('setor', 'like', "%{$search}%");
+
+        });
+    }
+
+    // SOMENTE ATIVAS
+    if ($ativas) {
+        $query->whereNull('data_alta');
+    }
+
+    // MÊS
+    if (!empty($mes)) {
+        $query->whereMonth('dt_interna', $mes);
+    }
+
+    // ANO
+    if (!empty($ano)) {
+        $query->whereYear('dt_interna', $ano);
+    }
+
+    // SETOR
+    if (!empty($setor)) {
+        $query->where('setor', $setor);
+    }
+
+    /* =========================
+       SETORES
+    ========================= */
+    $setores = (clone $query)
+        ->selectRaw('setor as name, COUNT(*) as total')
+        ->groupBy('setor')
+        ->orderByDesc('total')
+        ->get();
+
+    /* =========================
+       CONVÊNIOS
+    ========================= */
+    $convenios = (clone $query)
+        ->selectRaw('convenio as name, COUNT(*) as total')
+        ->groupBy('convenio')
+        ->orderByDesc('total')
+        ->get();
+
+    /* =========================
+       TIPOS
+    ========================= */
+    $tipos = (clone $query)
+        ->selectRaw('tipo_internacao as name, COUNT(*) as total')
+        ->groupBy('tipo_internacao')
+        ->orderByDesc('total')
+        ->get();
+
+    /* =========================
+       KPI
+    ========================= */
+    $internacoesAtivas = (clone $query)
+        ->whereNull('data_alta')
+        ->count();
+
+    $altas = (clone $query)
+        ->whereNotNull('data_alta')
+        ->count();
+
+    /* =========================
+       RESPONSE
+    ========================= */
+    return response()->json([
+        'setores'             => $setores,
+        'convenios'           => $convenios,
+        'tipos'               => $tipos,
+        'internacoes_ativas'  => $internacoesAtivas,
+        'altas'               => $altas,
+    ]);
 }
 
     /*

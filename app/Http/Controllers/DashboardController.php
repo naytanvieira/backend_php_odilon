@@ -42,7 +42,7 @@ class DashboardController extends Controller
         $pacientes         = Paciente::count();
         $internacoesAtivas = Internacoes::whereNull('data_alta')->count();
         $altas             = Internacoes::whereNotNull('data_alta')->count();
-        $totalLeitos       = 100; // ajusta para o seu valor real
+        $totalLeitos       = 441; // ajusta para o seu valor real
         $ocupacao          = $totalLeitos > 0 
                                 ? round(($internacoesAtivas / $totalLeitos) * 100) 
                                 : 0;
@@ -54,4 +54,6 @@ class DashboardController extends Controller
             'ocupacao'    => $ocupacao,
         ]);
     }
+
+    
 }
