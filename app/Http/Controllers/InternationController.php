@@ -269,6 +269,10 @@ public function stats(Request $request)
         ],
     ];
 
+    $mediaTempoAlta = (clone $query)
+    ->whereNotNull('data_alta')
+    ->avg('qtd_dias_int');
+
     /* =========================
        RESPONSE
     ========================= */
@@ -278,6 +282,7 @@ public function stats(Request $request)
         'tipos'               => $tipos,
         'internacoes_ativas'  => $internacoesAtivas,
         'altas'               => $altas,
+        'media_tempo_alta'   => round($mediaTempoAlta ?? 0, 1),
     ]);
 }
 
