@@ -31,7 +31,7 @@ class Internacoes extends Model
         return $this->belongsTo(
         Paciente::class,
         'cod_paciente',                 // coluna da tabela logs
-        'cod_paciente'   // coluna da spreadsheet_types
+        'paciente'   // coluna da spreadsheet_types
     );
         //return $this->belongsTo(Paciente::class);
     }

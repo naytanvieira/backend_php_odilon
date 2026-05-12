@@ -23,6 +23,8 @@ class InternationController extends Controller
     $setor = $request->query('setor', '');
 
    
+
+   
     $internacoes = Internacoes::with('paciente')
         ->when($search, function ($query) use ($search) {
             $query->where('codigo_atendimento', 'like', "%{$search}%")
@@ -38,11 +40,11 @@ class InternationController extends Controller
         ->when($ativas, function ($query) {
             $query->whereNull('data_alta');
         })
-         ->when($mes, function ($query) use ($mes) {
-            $query->whereMonth('dt_interna', $mes);
+        ->when($mes, function ($query) use ($mes) {
+        $query->whereRaw('MONTH(CONVERT_TZ(dt_interna, "+00:00", "-03:00")) = ?', [$mes]);
         })
         ->when($ano, function ($query) use ($ano) {
-            $query->whereYear('dt_interna', $ano);
+            $query->whereRaw('YEAR(CONVERT_TZ(dt_interna, "+00:00", "-03:00")) = ?', [$ano]);
         })
         ->when($setor, function ($query) use ($setor) {
             $query->where('setor', $setor);
@@ -65,6 +67,8 @@ public function exportar(Request $request): StreamedResponse
     $mes    = $request->query('mes', '');
     $ano    = $request->query('ano', '');
     $setor = $request->query('setor', '');
+
+    
 
     $internacoes = Internacoes::with('paciente')
         ->when($search, function ($query) use ($search) {
