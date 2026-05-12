@@ -83,6 +83,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::post('/patients/import',[PatientController::class, 'import']);
      Route::get('patients/cidades', [PatientController::class, 'cidades']);
+     Route::get('patients/exportar', [PatientController::class, 'exportar']);
     Route::get('/patients',[PatientController::class, 'queryAll']);
 
    

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Paciente;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PatientController extends Controller
 {
@@ -163,6 +164,104 @@ public function cidades()
         ->pluck('cidade');
 
     return response()->json($cidades);
+}
+
+
+public function exportar(Request $request): StreamedResponse
+{
+    $search  = $request->query('search', '');
+    $sexo    = $request->query('sexo', '');
+    $cidade  = $request->query('cidade', '');
+
+    $patients = Paciente::query()
+
+        ->when($search, function ($query) use ($search) {
+
+            $query->where(function ($q) use ($search) {
+
+                $q->where('paciente', 'like', "%{$search}%")
+                  ->orWhere('nome', 'like', "%{$search}%")
+                  ->orWhere('telefone', 'like', "%{$search}%")
+                  ->orWhere('bairro', 'like', "%{$search}%")
+                  ->orWhere('cidade', 'like', "%{$search}%")
+                  ->orWhere('sexo', 'like', "%{$search}%");
+
+            });
+
+        })
+
+        ->when($sexo, function ($query) use ($sexo) {
+
+            $query->where('sexo', $sexo);
+
+        })
+
+        ->when($cidade, function ($query) use ($cidade) {
+
+            $query->where('cidade', $cidade);
+
+        })
+
+        ->orderBy('nome')
+
+        ->get();
+
+    $headers = [
+        'Content-Type'        => 'text/csv; charset=UTF-8',
+        'Content-Disposition' => 'attachment; filename="pacientes.csv"',
+    ];
+
+    $callback = function () use ($patients) {
+
+        $file = fopen('php://output', 'w');
+
+        // UTF-8 Excel
+        fprintf(
+            $file,
+            chr(0xEF) . chr(0xBB) . chr(0xBF)
+        );
+
+        // Cabeçalho
+        fputcsv($file, [
+            'Atendimento',
+            'Paciente',
+            'Recepção',
+            'Nome',
+            'Telefone',
+            'Bairro',
+            'Cidade',
+            'Sexo',
+            'Data Nascimento',
+        ], ';');
+
+        // Dados
+        foreach ($patients as $item) {
+
+            fputcsv($file, [
+
+                $item->atendimento,
+                $item->paciente,
+                $item->recepcao,
+                $item->nome,
+                $item->telefone,
+                $item->bairro,
+                $item->cidade,
+                $item->sexo,
+                $item->dt_nasc,
+
+            ], ';');
+
+        }
+
+        fclose($file);
+
+    };
+
+    return response()->stream(
+        $callback,
+        200,
+        $headers
+    );
 }
 
 
