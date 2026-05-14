@@ -169,7 +169,8 @@ public function stats(Request $request)
     /* =========================
        QUERY BASE
     ========================= */
-    $query = Internacoes::query();
+    $query = Internacoes::query()
+    ->leftJoin('pacientes as paciente', 'paciente.paciente', '=', 'internacoes.cod_paciente');
 
     // SEARCH
     if (!empty($search)) {
@@ -247,28 +248,28 @@ public function stats(Request $request)
         [
             'name'  => 'Crianças',
             'total' => (clone $query)
-                ->whereRaw('TIMESTAMPDIFF(YEAR, data_nasc, CURDATE()) BETWEEN 0 AND 12')
+                ->whereRaw('TIMESTAMPDIFF(YEAR, paciente.dt_nasc, CURDATE()) BETWEEN 0 AND 12')
                 ->count()
         ],
 
         [
             'name'  => 'Adolescentes',
             'total' => (clone $query)
-                ->whereRaw('TIMESTAMPDIFF(YEAR, data_nasc, CURDATE()) BETWEEN 13 AND 17')
+                ->whereRaw('TIMESTAMPDIFF(YEAR, paciente.dt_nasc, CURDATE()) BETWEEN 13 AND 17')
                 ->count()
         ],
 
         [
             'name'  => 'Adultos',
             'total' => (clone $query)
-                ->whereRaw('TIMESTAMPDIFF(YEAR, data_nasc, CURDATE()) BETWEEN 18 AND 59')
+                ->whereRaw('TIMESTAMPDIFF(YEAR, paciente.dt_nasc, CURDATE()) BETWEEN 18 AND 59')
                 ->count()
         ],
 
         [
             'name'  => 'Idosos',
             'total' => (clone $query)
-                ->whereRaw('TIMESTAMPDIFF(YEAR, data_nasc, CURDATE()) >= 60')
+                ->whereRaw('TIMESTAMPDIFF(YEAR, paciente.dt_nasc, CURDATE()) >= 60')
                 ->count()
         ],
     ];
