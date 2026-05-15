@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::dropIfExists('pacientes');
         Schema::create('pacientes', function (Blueprint $table) {
 
             $table->id();

@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\DrgDashboardController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PlanilhaProcessamentoLogController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DrgController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\SpreadsheetTypeController;
@@ -124,7 +126,24 @@ Route::middleware('auth:api')->group(function () {
         '/ponto/saldo',
         [PontoRegistroController::class, 'saldo']
     );
+
+    //Conexão DRG
+
+    Route::prefix('drg')->group(function () {
+        Route::get('/', [DrgController::class, 'index']);
+        Route::get('/filtros', [DrgController::class, 'filtros']);
+        Route::get('/{drg}', [DrgController::class, 'show'])->whereNumber('drg');
+    });
+
+    Route::prefix('dashboard/drg')->group(function () {
+        Route::get('/resumo', [DrgDashboardController::class, 'resumo']);
+    });
 });
+
+//   Route::get(
+//         '/drg/renovaToken',
+//         [DrgController::class, 'renovarToken']
+//     );
 
 Route::get(
     '/dashboard/tempo-economizado',
