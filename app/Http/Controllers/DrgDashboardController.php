@@ -78,7 +78,12 @@ class DrgDashboardController extends Controller
             'condicoes_adquiridas_top' => $this->condicoesAdquiridasTop($drgIds),
             'procedimentos_top' => $this->procedimentosTop($drgIds),
             'cti_por_tipo' => $this->ctiPorTipo($drgIds),
-            'alertas' => $this->alertas($permanenciaReal, $permanenciaPrevista, $this->percentual($comCondicaoAdquirida, $total), $this->percentual($readmissao, $total)),
+            'alertas' => $this->alertas(
+                $permanenciaReal,
+                $permanenciaPrevista,
+                $this->percentual($comCondicaoAdquirida, $total),
+                $this->percentual($readmissao, $total)
+            ),
         ];
 
         return response()->json([
@@ -112,6 +117,36 @@ class DrgDashboardController extends Controller
 
         if ($request->filled('mdc')) {
             $query->where('descricao_do_mdc', $request->query('mdc'));
+        }
+
+        /**
+         * Novo filtro por UF.
+         *
+         * Exemplo de uso:
+         * /api/drg-dashboard/resumo?uf=MG
+         */
+        if ($request->filled('uf')) {
+            $uf = strtoupper(trim($request->query('uf')));
+
+            $query->whereRaw(
+                "UPPER(TRIM({$this->colunaSql('uf')})) = ?",
+                [$uf]
+            );
+        }
+
+        /**
+         * Novo filtro por município.
+         *
+         * Exemplo de uso:
+         * /api/drg-dashboard/resumo?municipio=Belo Horizonte
+         */
+        if ($request->filled('municipio')) {
+            $municipio = mb_strtolower(trim($request->query('municipio')), 'UTF-8');
+
+            $query->whereRaw(
+                "LOWER(TRIM({$this->colunaSql('municipio')})) = ?",
+                [$municipio]
+            );
         }
 
         return $query;
@@ -204,17 +239,6 @@ class DrgDashboardController extends Controller
     {
         $dataInternacao = $this->colunaSql('data_de_internacao');
 
-        /*
-         * Não use HAVING aqui.
-         *
-         * Em algumas versões/configurações do MySQL, principalmente com
-         * ONLY_FULL_GROUP_BY ativo, a expressão do HAVING usando a coluna base
-         * `data_de_internacao` pode gerar:
-         *
-         * Unknown column 'data_de_internacao' in 'having clause'
-         *
-         * Por isso a data válida é filtrada no WHERE, antes do agrupamento.
-         */
         $dataConvertida = "COALESCE(
             STR_TO_DATE(LEFT({$dataInternacao}, 10), '%Y-%m-%d'),
             STR_TO_DATE(LEFT({$dataInternacao}, 10), '%d/%m/%Y')
@@ -230,7 +254,6 @@ class DrgDashboardController extends Controller
             ->selectRaw("AVG({$this->numeroSql('permanencia_real')}) as permanencia_real_media")
             ->selectRaw("AVG({$this->numeroSql('permanencia_prevista_na_alta')}) as permanencia_prevista_media")
             ->groupByRaw($mes)
-            // Pega primeiro os meses mais recentes. Ex.: 2026, 2025, 2024...
             ->orderByRaw("{$mes} desc")
             ->limit(12)
             ->get()
@@ -238,7 +261,10 @@ class DrgDashboardController extends Controller
                 'mes' => $row->mes,
                 'real' => round((float) $row->permanencia_real_media, 1),
                 'prevista' => round((float) $row->permanencia_prevista_media, 1),
-                'diferenca' => round(((float) $row->permanencia_real_media) - ((float) $row->permanencia_prevista_media), 1),
+                'diferenca' => round(
+                    ((float) $row->permanencia_real_media) - ((float) $row->permanencia_prevista_media),
+                    1
+                ),
             ])
             ->values()
             ->toArray();
